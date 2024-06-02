@@ -38,7 +38,6 @@ while True:
 
         # Draw line between p1 and p2 with color change condition
         cv2.line(img, (x1, y1), (x2, y2), line_color, 3)
-
         # Check for the dumbbell curls only if the slope is valid
         color = (255, 0, 255)
         if valid_slope:
