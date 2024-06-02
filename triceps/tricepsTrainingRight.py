@@ -3,17 +3,18 @@ import numpy as np
 import PosEstimationModule as pm
 
 # cap = cv2.VideoCapture(0)
-path = "videos/workOutMyself.mp4"
+path = "../videos/workOutMyself.mp4"
 cap = cv2.VideoCapture(0)
 
 detector = pm.poseDetector()
 count = 0
 dir = 0
-
+valid_slope = True  # Flag to check if the slope is valid
 
 while True:
     _, img = cap.read()
     #img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    img = cv2.flip(img, 1)
     img = cv2.resize(img, (940, 580))
     img = detector.findPose(img, draw=False)
     lmList = detector.getPosition(img)
@@ -23,18 +24,35 @@ while True:
         bar = np.interp(angle, (220, 280), (430, 60))
         # print(angle, per)
 
-        # Check for the dumbbell curls
+        # Calculate the slope between p1 and p2
+        x1, y1 = lmList[11][1], lmList[11][2]  # p1 coordinates (shoulder)
+        x2, y2 = lmList[13][1], lmList[13][2]  # p2 coordinates (elbow)
+        slope = np.degrees(np.arctan2(y2 - y1, x2 - x1))
+
+        # Check the slope condition and set the flag
+        line_color = (0, 255, 0)  # Default line color (green)
+        valid_slope = True  # Reset flag
+
+        if abs(slope) < 60 or abs(slope) > 100:
+            line_color = (0, 0, 255)  # Change to red if slope is outside the desired range
+            valid_slope = False  # Set flag to False if slope is outside the range
+
+        # Draw line between p1 and p2 with color change condition
+        cv2.line(img, (x1, y1), (x2, y2), line_color, 3)
+
+        # Check for the dumbbell curls only if the slope is valid
         color = (255, 0, 255)
-        if per == 100:
-            color = (0, 255, 0)
-            if dir == 0:
-                count += 0.5
-                dir = 1
-        if per == 0:
-            color = (0, 255, 0)
-            if dir == 1:
-                count += 0.5
-                dir = 0
+        if valid_slope:
+            if per == 100:
+                color = (0, 255, 0)
+                if dir == 0:
+                    count += 0.5
+                    dir = 1
+            if per == 0:
+                color = (0, 255, 0)
+                if dir == 1:
+                    count += 0.5
+                    dir = 0
         # print(count)
 
         # Draw Bar
@@ -52,19 +70,7 @@ while True:
         cv2.putText(img, str(int(angle)), (cx - 50, cy - 20), cv2.FONT_HERSHEY_PLAIN, 2,
                     (255, 0, 0), 2)
 
-        # Calculate the slope between p1 and p2
-        x1, y1 = lmList[11][1], lmList[11][2]  # p1 coordinates (shoulder)
-        x2, y2 = lmList[13][1], lmList[13][2]  # p2 coordinates (elbow)
-        slope = np.degrees(np.arctan2(y2 - y1, x2 - x1))
-
-        # Draw line between p1 and p2 with color change condition
-        line_color = (0, 255, 0)  # Default line color (green)
-        if abs(slope) < 65 or abs(slope) > 95:
-            line_color = (0, 0, 255)  # Change to red if slope > 30 degrees
-
-        cv2.line(img, (x1, y1), (x2, y2), line_color, 3)
-
-        cx, cy = lmList[11][1], lmList[11][2]  # Get coordinates of the elbow (point 13)
+        cx, cy = lmList[11][1], lmList[11][2]  # Get coordinates of the shoulder (point 11)
         cv2.putText(img, str(int(slope)), (cx - 50, cy - 20), cv2.FONT_HERSHEY_PLAIN, 2,
                     (255, 0, 0), 2)
 
