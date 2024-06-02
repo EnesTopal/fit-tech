@@ -14,6 +14,7 @@ valid_slope = True  # Flag to check if the slope is valid
 while True:
     _, img = cap.read()
     #img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    img = cv2.flip(img, 1)
     img = cv2.resize(img, (940, 580))
     img = detector.findPose(img, draw=False)
     lmList = detector.getPosition(img)
@@ -32,7 +33,7 @@ while True:
         line_color = (0, 255, 0)  # Default line color (green)
         valid_slope = True  # Reset flag
 
-        if abs(slope) < 65 or abs(slope) > 95:
+        if abs(slope) < 60 or abs(slope) > 125:
             line_color = (0, 0, 255)  # Change to red if slope is outside the desired range
             valid_slope = False  # Set flag to False if slope is outside the range
 

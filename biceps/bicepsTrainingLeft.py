@@ -32,7 +32,7 @@ while True:
         line_color = (0, 255, 0)  # Default line color (green)
         valid_slope = True  # Reset flag
 
-        if abs(slope) < 65 or abs(slope) > 95:
+        if abs(slope) < 60 or abs(slope) > 125:
             line_color = (0, 0, 255)  # Change to red if slope is outside the desired range
             valid_slope = False  # Set flag to False if slope is outside the range
 
